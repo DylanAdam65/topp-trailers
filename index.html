@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Topp Trailers | Command Center Staging</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0d0f10;
+            --surface: #1a1d1e;
+            --surface-hover: #25282a;
+            --accent-green: #a3e635;
+            --accent-pink: #d81b60; /* Adjusted to match reference image */
+            --accent-blue: #3b82f6;
+            --accent-yellow: #fbbf24;
+            --accent-red: #ef4444;
+            --accent-gray: #64748b;
+            --text: #f8fafc;
+            --text-dim: #94a3b8;
+            --border: #2d2f30;
+            --sidebar-width: 260px;
+        }
+
+        * { box-sizing: border-box; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: var(--bg); 
+            color: var(--text); 
+            margin: 0; 
+            display: flex; 
+            height: 100vh; 
+            overflow: hidden; 
+        }
+
+        /* Sidebar Navigation */
+        aside { 
+            width: var(--sidebar-width); 
+            background: var(--surface); 
+            border-right: 1px solid var(--border); 
+            display: flex; 
+            flex-direction: column; 
+            padding: 24px;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .logo { 
+            font-weight: 800; 
+            font-size: 1.2rem; 
+            margin-bottom: 40px; 
+            letter-spacing: -0.5px;
+            text-transform: uppercase;
+        }
+        .logo span { color: var(--accent-green); }
+
+        .nav-link { 
+            padding: 12px 16px; 
+            color: var(--text-dim); 
+            text-decoration: none; 
+            border-radius: 10px; 
+            margin-bottom: 6px; 
+            cursor: pointer; 
+            transition: all 0.2s; 
+            font-weight: 600; 
+            font-size: 14px;
+        }
+        .nav-link:hover { background: var(--surface-hover); color: var(--text); }
+        .nav-link.active { 
+            background: rgba(163, 230, 53, 0.1); 
+            color: var(--accent-green); 
+            border-left: 3px solid var(--accent-green);
+        }
+
+        /* Main Content */
+        main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; position: relative; }
+        
+        header { 
+            padding: 20px 40px; 
+            background: rgba(13, 15, 16, 0.8); 
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border); 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .mobile-toggle { display: none; background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
+
+        .stat-cluster { display: flex; gap: 12px; }
+        .stat-box { 
+            background: #000; 
+            padding: 8px 16px; 
+            border-radius: 8px; 
+            border: 1px solid var(--border); 
+            text-align: right;
+        }
+        .stat-box label { font-size: 9px; color: var(--text-dim); text-transform: uppercase; display: block; }
+        .stat-box span { font-weight: 700; color: var(--accent-green); font-size: 15px; }
+
+        .content-area { padding: 30px 40px; max-width: 1400px; margin: 0 auto; width: 100%; }
+        
+        .section { display: none; animation: slideUp 0.4s ease-out; }
+        .section.active { display: block; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Inventory Cards */
+        .inventory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
+        .card { background: var(--surface); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; transition: 0.3s; }
+        .card:hover { border-color: var(--accent-green); transform: translateY(-5px); }
+        .card-img { height: 180px; width: 100%; object-fit: cover; border-bottom: 1px solid var(--border); }
+        .card-body { padding: 16px 20px; }
+        .card-body h4 { margin: 0 0 8px 0; font-size: 15px; font-weight: 600; }
+        .price { font-size: 18px; font-weight: 800; color: var(--accent-green); display: block; margin-bottom: 12px; }
+
+        /* Tables */
+        .table-container { overflow-x: auto; background: var(--surface); border-radius: 12px; border: 1px solid var(--border); }
+        table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        th { text-align: left; padding: 16px; font-size: 11px; color: var(--text-dim); background: rgba(0,0,0,0.2); text-transform: uppercase; }
+        td { padding: 16px; border-bottom: 1px solid var(--border); font-size: 13px; }
+
+        /* Status Colors */
+        .status-select { 
+            background: #111; color: #fff; border: 1px solid var(--border); padding: 8px; border-radius: 6px; 
+            font-size: 10px; font-weight: 800; outline: none; text-transform: uppercase; width: 130px;
+        }
+        .status-hot { border: 2px solid var(--accent-red); color: var(--accent-red); }
+        .status-pending { border: 2px solid var(--accent-yellow); color: var(--accent-yellow); }
+        .status-sold { border: 2px solid var(--accent-pink); color: var(--accent-pink); }
+        .status-progress { border: 2px solid var(--accent-blue); color: var(--accent-blue); }
+        .status-cold { border: 2px solid var(--accent-gray); color: var(--accent-gray); }
+
+        /* Analytics Specific Styles */
+        .analytics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }
+        .analytics-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; }
+        .chart-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 8px; color: var(--text-dim); }
+        .progress-bar { height: 12px; background: #000; border-radius: 6px; overflow: hidden; margin-bottom: 20px; }
+        .progress-fill { height: 100%; border-radius: 6px; }
+        
+        .bar-chart { display: flex; align-items: flex-end; gap: 15px; height: 150px; padding-top: 20px; border-bottom: 1px solid var(--border); margin-bottom: 10px; }
+        .bar { flex: 1; background: var(--accent-green); border-radius: 4px 4px 0 0; transition: 0.3s; position: relative; }
+        .bar:hover { filter: brightness(1.2); }
+        .bar-label { font-size: 10px; text-align: center; margin-top: 8px; color: var(--text-dim); }
+
+        .source-pill { padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
+        .pill-fb { background: rgba(59, 130, 246, 0.2); color: var(--accent-blue); border: 1px solid var(--accent-blue); }
+        .pill-tt { background: rgba(244, 114, 182, 0.2); color: var(--accent-pink); border: 1px solid var(--accent-pink); }
+
+        .btn-view { background: var(--accent-pink); color: #fff; border: none; padding: 6px 14px; border-radius: 4px; font-weight: 700; font-size: 11px; cursor: pointer; text-transform: uppercase; }
+        .btn-view:hover { filter: brightness(1.1); }
+
+        @media (max-width: 900px) {
+            aside { position: absolute; left: 0; top: 0; bottom: 0; transform: translateX(-100%); }
+            aside.open { transform: translateX(0); }
+            .mobile-toggle { display: block; }
+        }
+    </style>
+</head>
+<body>
+
+<aside id="sidebar">
+    <div class="logo">TOPP <span>TRAILERS</span></div>
+    <div class="nav-link active" onclick="navigate('inventory', this)">Inventory</div>
+    <div class="nav-link" onclick="navigate('leads', this)">CRM Leads</div>
+    <div class="nav-link" onclick="navigate('analytics', this)">Ad Analytics</div>
+    <div class="nav-link" onclick="navigate('history', this)">Sales History</div>
+    
+    <div style="margin-top: auto; display: flex; flex-direction: column; gap: 15px;">
+        <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 12px; border: 1px solid var(--border);">
+            <p style="margin: 0; font-size: 11px; color: var(--accent-green); display: flex; align-items: center; gap: 8px;">
+                <span style="width: 8px; height: 8px; background: var(--accent-green); border-radius: 50%; box-shadow: 0 0 8px var(--accent-green);"></span>
+                LIVE ENGINE ACTIVE
+            </p>
+        </div>
+        <div style="text-align: center; font-size: 12px; color: var(--text-dim);">
+            Developed By <a href="https://skyloftdigital.com/" target="_blank" style="color: var(--accent-green); text-decoration: none; font-weight: 600;">Skyloft Digital</a>
+        </div>
+    </div>
+</aside>
+
+<main>
+    <header>
+        <button class="mobile-toggle" onclick="toggleSidebar()">MENU</button>
+        <h2 style="margin:0; font-size: 15px; text-transform: uppercase; letter-spacing: 1px;">Command Center</h2>
+        <div class="stat-cluster">
+            <div class="stat-box"><label>Avg CPL</label><span>$14.20</span></div>
+            <div class="stat-box"><label>Total Spend</label><span style="color:var(--accent-pink)">$4,250</span></div>
+        </div>
+    </header>
+
+    <div class="content-area">
+        <div id="inventory" class="section active">
+            <div class="inventory-grid">
+                <div class="card">
+                    <img class="card-img" src="https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&q=80&w=800">
+                    <div class="card-body">
+                        <h4>2020 Hyundai 53' Dry Van</h4>
+                        <span class="price">$17,500</span>
+                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-dim);">
+                            <span>Road Ready: 6 Days</span>
+                            <button class="btn-view">View Details</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <img class="card-img" src="https://images.unsplash.com/photo-1591767792024-c119ca217c4b?auto=format&fit=crop&q=80&w=800">
+                    <div class="card-body">
+                        <h4>2019 Utility 53' Reefer</h4>
+                        <span class="price">$25,900</span>
+                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-dim);">
+                            <span>Road Ready: 7 Days</span>
+                            <button class="btn-view">View Details</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="leads" class="section">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr><th>Contact</th><th>Ad Source</th><th>Trailer Interest</th><th>Status</th><th>Speed</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Robert Miller</strong><br><small>Houston, TX</small></td>
+                            <td><span class="source-pill pill-fb">Facebook - Catalog Ad</span></td>
+                            <td>Hyundai 53' Dry Van</td>
+                            <td>
+                                <select class="status-select status-hot" onchange="updateStatus(this)">
+                                    <option value="hot">HOT LEAD</option>
+                                    <option value="progress">IN PROGRESS</option>
+                                    <option value="sold">SOLD</option>
+                                </select>
+                            </td>
+                            <td style="color:var(--accent-green)">4m</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Sarah Chen</strong><br><small>Miami, FL</small></td>
+                            <td><span class="source-pill pill-tt">TikTok - Video Promo</span></td>
+                            <td>Utility 53' Reefer</td>
+                            <td>
+                                <select class="status-select status-progress" onchange="updateStatus(this)">
+                                    <option value="progress">IN PROGRESS</option>
+                                    <option value="hot">HOT LEAD</option>
+                                    <option value="pending">PENDING</option>
+                                </select>
+                            </td>
+                            <td>12m</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="analytics" class="section">
+            <div class="analytics-grid">
+                <div class="analytics-card">
+                    <h3 style="margin-top:0; font-size: 14px; text-transform: uppercase; color: var(--accent-green);">Lead Source Volume</h3>
+                    <div class="chart-label"><span>Facebook Business</span><span>62%</span></div>
+                    <div class="progress-bar"><div class="progress-fill" style="width: 62%; background: var(--accent-blue);"></div></div>
+                    
+                    <div class="chart-label"><span>TikTok Ads</span><span>38%</span></div>
+                    <div class="progress-bar"><div class="progress-fill" style="width: 38%; background: var(--accent-pink);"></div></div>
+                </div>
+
+                <div class="analytics-card">
+                    <h3 style="margin-top:0; font-size: 14px; text-transform: uppercase; color: var(--accent-green);">Weekly Conversion Trend</h3>
+                    <div class="bar-chart">
+                        <div class="bar" style="height: 40%;"></div>
+                        <div class="bar" style="height: 65%;"></div>
+                        <div class="bar" style="height: 50%;"></div>
+                        <div class="bar" style="height: 90%;"></div>
+                        <div class="bar" style="height: 75%;"></div>
+                        <div class="bar" style="height: 85%;"></div>
+                        <div class="bar" style="height: 60%;"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 9px; color: var(--text-dim);">
+                        <span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span><span>SUN</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="history" class="section">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr><th>Unit</th><th>Source</th><th>Price</th><th>Date</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>2018 Hyundai</td><td>Facebook</td><td style="color:var(--accent-green)">$16,500</td><td>Feb 14, 2026</td></tr>
+                        <tr><td>2014 Wabash</td><td>TikTok</td><td style="color:var(--accent-green)">$3,900</td><td>Feb 12, 2026</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    function navigate(id, el) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+        el.classList.add('active');
+        if(window.innerWidth < 900) toggleSidebar();
+    }
+
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('open');
+    }
+
+    function updateStatus(select) {
+        select.className = 'status-select status-' + select.value;
+    }
+
+    document.querySelectorAll('.status-select').forEach(s => updateStatus(s));
+</script>
+
+</body>
+</html>
